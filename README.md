@@ -76,7 +76,7 @@ OPENWEATHER_LON=user current location
      ```
 
 2. **Create the User**
-    - Run the following SQL command to create the user with password (reference the .env file for the password):
+    - Run the following SQL command to create the user with password (reference the `.env file` for the password):
 
         ```sql
         CREATE USER 'user' WITH PASSWORD '<password>';

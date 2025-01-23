@@ -60,7 +60,7 @@ API_DB_USER=username
 API_DB_PASS='your password'
 API_HOST=127.0.0.1
 
-OPEN_AI_KEY=sk-proj-open-AI-key<Your-Key>
+OPEN_AI_KEY=<Your OPEN AI Key>
 
 OPENWEATHER_API=99de958771535996d27b9b2f2678661f
 OPENWEATHER_LAT=user current location 

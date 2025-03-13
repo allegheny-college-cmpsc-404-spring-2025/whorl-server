@@ -169,17 +169,17 @@ LOGGING = {
             "class": "logging.handlers.TimedRotatingFileHandler",
             "when": "D",
             "filename": os.path.join(BASE_DIR, "logs/successful.log"),
-            "formatter": "simple",
+            "formatter": "verbose",
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["debug_file"],
+            "handlers": ["debug_file", "successful_file"],
             "level": "DEBUG",
             "propagate": True,
         },
         "django.request": {
-            "handlers": ["console", "error_file"],
+            "handlers": ["console", "error_file", "successful_file"],
             "level": "WARNING",
             "propagate": False,
         },

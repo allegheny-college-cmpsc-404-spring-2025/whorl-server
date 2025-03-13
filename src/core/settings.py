@@ -16,50 +16,46 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv()
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    os.getenv("API_URL")
-]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", os.getenv("API_URL")]
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost', 'http://127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ["http://localhost", "http://127.0.0.1"]
 
 DEBUG = True
 
 # Load .env file
-load_dotenv(dotenv_path=os.path.join(BASE_DIR, 'srv/endpoints/.env'))
+load_dotenv(dotenv_path=os.path.join(BASE_DIR, "srv/endpoints/.env"))
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Database configuration
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'api',
-        'USER': os.getenv('API_DB_USER'),
-        'PASSWORD': os.getenv('API_DB_PASS'),
-        'HOST': "localhost",
-        'PORT': ''
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "api",
+        "USER": os.getenv("API_DB_USER"),
+        "PASSWORD": os.getenv("API_DB_PASS"),
+        "HOST": "localhost",
+        "PORT": "",
     }
 }
 
-ROOT_URLCONF='core.urls'
+ROOT_URLCONF = "core.urls"
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'pgtrigger',
-    'rest_framework',
-    'drf_yasg',
-    'core',
-    'climate',
-    'inventory',
-    'omnipresence',
-    'persona'
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "pgtrigger",
+    "rest_framework",
+    "drf_yasg",
+    "core",
+    "climate",
+    "inventory",
+    "omnipresence",
+    "persona",
 ]
 
 MIDDLEWARE = [
@@ -89,7 +85,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'core.wsgi.application'
+WSGI_APPLICATION = "core.wsgi.application"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -135,51 +131,50 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # this will ignore django autoreloads and django db backend logs
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "datefmt": "%d/%b/%Y %H:%M:%S",
+            "style": "{",
         },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
-        },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'general.log'),
-            'formatter': 'verbose'
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': True,
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
-        'django.request': {
-            'handlers': ['file'],
-            'level': 'ERROR',
-            'propagate': False,
+        "error_file": {
+            "level": "WARNING",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "when": "D",
+            "filename": os.path.join(BASE_DIR, "logs/error.log"),
+            "formatter": "verbose",
         },
-        'django.utils.autoreload': {
-            'handlers': ['console', 'file'],
-            'level': 'WARNING',
-            'propagate': False,
+        "debug_file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "when": "D",
+            "filename": os.path.join(BASE_DIR, "logs/debug.log"),
+            "formatter": "simple",
         },
-        'django.db.backends': {
-            'handlers': ['console', 'file'],
-            'level': 'WARNING',
-            'propagate': False,
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["debug_file"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+        "django.request": {
+            "handlers": ["console", "error_file"],
+            "level": "WARNING",
+            "propagate": False,
         },
     },
 }

@@ -144,6 +144,16 @@ LOGGING = {
             "style": "{",
         },
     },
+    "filters": {
+        "info_to_warning": {
+            "()": "django.utils.log.CallbackFilter",
+            "callback": lambda record: 20 <= record.levelno < 30,  # INFO to WARNING (not including WARNING)
+        },
+        "warnings_and_above": {
+            "()": "django.utils.log.CallbackFilter", 
+            "callback": lambda record: record.levelno >= 30,  # WARNING level and above
+        },
+    },
     "handlers": {
         "console": {
             "level": "DEBUG",
@@ -156,6 +166,15 @@ LOGGING = {
             "when": "D",
             "filename": os.path.join(BASE_DIR, "logs/error.log"),
             "formatter": "verbose",
+            "filters": ["warnings_and_above"],
+        },
+        "successful_file": {
+            "level": "INFO",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "when": "D",
+            "filename": os.path.join(BASE_DIR, "logs/successful.log"),
+            "formatter": "verbose",
+            "filters": ["info_to_warning"],  # Changed to capture INFO up to WARNING
         },
         "debug_file": {
             "level": "DEBUG",
@@ -164,27 +183,15 @@ LOGGING = {
             "filename": os.path.join(BASE_DIR, "logs/debug.log"),
             "formatter": "simple",
         },
-        "successful_file": {
-            "level": "INFO",
-            "class": "logging.handlers.TimedRotatingFileHandler",
-            "when": "D",
-            "filename": os.path.join(BASE_DIR, "logs/successful.log"),
-            "formatter": "verbose",
-        },
     },
     "loggers": {
         "django": {
-            "handlers": ["debug_file", "successful_file"],
+            "handlers": ["debug_file"],
             "level": "DEBUG",
             "propagate": True,
         },
         "django.request": {
             "handlers": ["console", "error_file", "successful_file"],
-            "level": "WARNING",
-            "propagate": False,
-        },
-        "django.db.backends": {
-            "handlers": ["console", "successful_file"],
             "level": "INFO",
             "propagate": False,
         },

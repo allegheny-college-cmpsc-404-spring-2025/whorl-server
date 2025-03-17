@@ -8,6 +8,7 @@ from the token with the username provided in the request headers.
 """
 
 import requests
+import logging
 from django.http import JsonResponse
 
 
@@ -67,3 +68,18 @@ class GitHubTokenAuthenticationMiddleware:
                 return JsonResponse({"detail": "Forbidden"}, status=403)
         else:
             return JsonResponse({"detail": "Forbidden"}, status=403)
+
+# Add this to core/middleware.py
+class RequestLoggingMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.logger = logging.getLogger('django.request')
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        
+        if 200 <= response.status_code < 400:
+            self.logger.info("sucess request")
+
+        return response
+    

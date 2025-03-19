@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import logging
 
 from pathlib import Path
 
@@ -67,7 +68,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "core.middleware.GitHubTokenAuthenticationMiddleware",
-    "core.middleware.RequestLoggingMiddleware",  # Add this line
 ]
 
 TEMPLATES = [
@@ -130,65 +130,67 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Logging Configuration
 # this will ignore django autoreloads and django db backend logs
+# Custom Filter Class
+class LevelFilter(logging.Filter):
+    def __init__(self, level):
+        self.level = level
+
+    def filter(self, record):
+        return record.levelname == self.level
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
         "verbose": {
-            "format": "{levelname} {asctime} {module} {message}",
-            "datefmt": "%d/%b/%Y %H:%M:%S",
-            "style": "{",
+            "format": "[%(asctime)s] %(levelname)s: %(message)s",
         },
         "simple": {
-            "format": "{levelname} {message}",
-            "style": "{",
+            "format": "%(levelname)s: %(message)s",
         },
     },
     "filters": {
-        "info_to_warning": {
-            "()": "django.utils.log.CallbackFilter",
-            "callback": lambda record: 20 <= record.levelno < 30,  # INFO to WARNING (not including WARNING)
+        "warning_filter": {
+            "()": "core.settings.LevelFilter",
+            "level": "WARNING",
+        },
+        "info_filter": {
+            "()": "core.settings.LevelFilter",
+            "level": "INFO",
         },
     },
     "handlers": {
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        },
-        "error_file": {
+        "file_warning": {
             "level": "WARNING",
-            "class": "logging.handlers.TimedRotatingFileHandler",
-            "when": "D",
+            "class": "logging.FileHandler",
             "filename": os.path.join(BASE_DIR, "logs/error.log"),
             "formatter": "verbose",
+            "filters": ["warning_filter"],
         },
-        "successful_file": {
+        "file_info": {
             "level": "INFO",
-            "class": "logging.handlers.TimedRotatingFileHandler",
-            "when": "D",
+            "class": "logging.FileHandler",
             "filename": os.path.join(BASE_DIR, "logs/successful.log"),
             "formatter": "verbose",
-            "filters": ["info_to_warning"],
+            "filters": ["info_filter"],
+        },  
+        "console_warning": {
+            "level": "WARNING",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+            "filters": ["warning_filter"],
         },
-        "debug_file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.TimedRotatingFileHandler",
-            "when": "D",
-            "filename": os.path.join(BASE_DIR, "logs/debug.log"),
-            "formatter": "simple",
+        "console_info": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+            "filters": ["info_filter"],
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["debug_file"],
+            "handlers": ["file_warning", "file_info", "console_warning", "console_info"],
             "level": "DEBUG",
-            "propagate": True,
-        },
-        "django.request": {
-            "handlers": ["console", "error_file", "successful_file"],
-            "level": "INFO",
             "propagate": False,
         },
     },

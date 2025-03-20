@@ -4,6 +4,12 @@ import logging
 
 from pathlib import Path
 
+# If a logs directory exists, use it; otherwise, create it
+BASE_DIR = Path(__file__).resolve().parent.parent
+LOGS_DIR = os.path.join(BASE_DIR, "logs")
+if not os.path.exists(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
+
 # Versioning
 REST_FRAMEWORK = {
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning"

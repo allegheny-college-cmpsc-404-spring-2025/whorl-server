@@ -1,6 +1,8 @@
 import os
 from dotenv import load_dotenv
 import logging
+import threading
+import requests
 
 from pathlib import Path
 
@@ -11,6 +13,8 @@ if not os.path.exists(LOGS_DIR):
     os.makedirs(LOGS_DIR)
 
 # Versioning
+
+
 REST_FRAMEWORK = {
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning"
 }
@@ -20,6 +24,13 @@ SECRET_KEY = "django-insecure-t6n*wl=xvln@*wvjh7_bv2&xi4wsyx8hl6qviiq$8)kn3zy^zr
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# If a logs directory exists, use it; otherwise, create it
+
+LOGS_DIR = os.path.join(BASE_DIR, "logs")
+if not os.path.exists(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
+
 
 load_dotenv()
 
@@ -134,6 +145,7 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
 # Logging Configuration
 # this will ignore django autoreloads and django db backend logs
 # Custom Filter Class
@@ -144,15 +156,40 @@ class LevelFilter(logging.Filter):
     def filter(self, record):
         return record.levelname == self.level
 
+
+class LevelFilter(logging.Filter):
+    def __init__(self, level):
+        self.level = level
+
+    def filter(self, record):
+        return record.levelname == self.level
+
+
+class RequestFilter(logging.Filter):
+    def filter(self, record):
+        if getattr(record, "args", None):
+            log_info = record.args
+            try:
+                code = log_info[-2]
+                code = int(code)
+                if code >= 100:
+                    if code < 600:
+                        return True
+                return False
+            except:
+                return False
+        return False
+
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
         "verbose": {
-            "format": "[%(asctime)s] %(levelname)s: %(message)s",
+            "format": "[%(asctime)s]: %(levelname)s : %(message)s",
         },
         "simple": {
-            "format": "%(levelname)s: %(message)s",
+            "format": "%(levelname)s : %(message)s",
         },
     },
     "filters": {
@@ -164,6 +201,9 @@ LOGGING = {
             "()": "core.settings.LevelFilter",
             "level": "INFO",
         },
+        "request_filter": {
+            "()": "core.settings.RequestFilter",
+        },
     },
     "handlers": {
         "file_warning": {
@@ -171,14 +211,26 @@ LOGGING = {
             "class": "logging.FileHandler",
             "filename": os.path.join(BASE_DIR, "logs/error.log"),
             "formatter": "verbose",
-            "filters": ["warning_filter"],
+            "filters": ["warning_filter", "request_filter"],
         },
         "file_info": {
             "level": "INFO",
             "class": "logging.FileHandler",
             "filename": os.path.join(BASE_DIR, "logs/successful.log"),
             "formatter": "verbose",
-            "filters": ["info_filter"],
+            "filters": ["info_filter", "request_filter"],
+        },
+        "console_warning": {
+            "level": "WARNING",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+            "filters": ["warning_filter", "request_filter"],
+        },
+        "console_info": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+            "filters": ["info_filter", "request_filter"],
         },
         "file_debug": {
             "level": "DEBUG",
@@ -186,22 +238,16 @@ LOGGING = {
             "filename": os.path.join(BASE_DIR, "logs/debug.log"),
             "formatter": "verbose",
         },
-        "console_warning": {
-            "level": "WARNING",
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-            "filters": ["warning_filter"],
-        },
-        "console_info": {
-            "level": "INFO",
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-            "filters": ["info_filter"],
-        },
     },
     "loggers": {
         "django": {
-            "handlers": ["file_warning", "file_info", "file_debug", "console_warning", "console_info"],
+            "handlers": [
+                "file_warning",
+                "file_info",
+                "file_debug",
+                "console_warning",
+                "console_info",
+            ],
             "level": "DEBUG",
             "propagate": False,
         },

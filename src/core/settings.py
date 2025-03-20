@@ -173,7 +173,13 @@ LOGGING = {
             "filename": os.path.join(BASE_DIR, "logs/successful.log"),
             "formatter": "verbose",
             "filters": ["info_filter"],
-        },  
+        },
+        "file_debug": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "logs/debug.log"),
+            "formatter": "verbose",
+        },
         "console_warning": {
             "level": "WARNING",
             "class": "logging.StreamHandler",
@@ -189,7 +195,7 @@ LOGGING = {
     },
     "loggers": {
         "django": {
-            "handlers": ["file_warning", "file_info", "console_warning", "console_info"],
+            "handlers": ["file_warning", "file_info", "file_debug", "console_warning", "console_info"],
             "level": "DEBUG",
             "propagate": False,
         },

@@ -3,6 +3,11 @@ from dotenv import load_dotenv
 import logging
 import threading
 import requests
+# for writing logs to a file
+import gzip
+import shutil
+import datetime
+import schedule
 
 from pathlib import Path
 
@@ -286,3 +291,35 @@ LOGGING = {
         },
     },
 }
+
+
+# rotate through the file logs
+
+current_date = datetime.date.today()
+
+absolute_path_to_logs = os.path.abspath("src/logs")
+file_path = os.path.abspath("src/logs/debug.log")
+new_file_path = os.path.join("src/past_logs", str(current_date) + ".gz")
+# print(absolute_path_to_logs)
+# print(file_path)
+
+def compress_old_logs():
+    """
+    Moves and compresses rotated log files into 'past_logs' directory."
+    """
+    # Compress log file
+    with open(file_path, "rb") as f_in, gzip.open(new_file_path, "wb") as f_out:
+        print("this works")
+        shutil.copyfileobj(f_in, f_out)
+
+    # Clear all the files in src/logs log file after compression
+    for file in os.listdir(absolute_path_to_logs):
+        logs_file_path = os.path.join(absolute_path_to_logs, file)
+        if not os.path.exists(logs_file_path):
+            open(file, 'w').close()
+            print(f"File added: {logs_file_path}")
+        open(logs_file_path, 'r+').truncate(0)
+
+    print(f"Compressed and moved: {new_file_path}")
+
+schedule.every(5).minutes.do(compress_old_logs)

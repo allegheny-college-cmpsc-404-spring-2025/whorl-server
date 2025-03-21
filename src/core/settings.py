@@ -8,13 +8,13 @@ from pathlib import Path
 
 # If a logs directory exists, use it; otherwise, create it
 BASE_DIR = Path(__file__).resolve().parent.parent
+# Define the path for the logs directory within the base directory.
 LOGS_DIR = os.path.join(BASE_DIR, "logs")
+# Check if the logs directory exists. If it does not, create it.
 if not os.path.exists(LOGS_DIR):
     os.makedirs(LOGS_DIR)
 
 # Versioning
-
-
 REST_FRAMEWORK = {
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning"
 }
@@ -145,36 +145,60 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
-# Logging Configuration
-# this will ignore django autoreloads and django db backend logs
-# Custom Filter Class
 class LevelFilter(logging.Filter):
+    """
+    A logging filter that allows log records with a specific log level to pass through.
+
+    Attributes:
+        level (str): The log level (e.g., "INFO", "WARNING") to filter for.
+    """
+
     def __init__(self, level):
+        """
+        Initialize the LevelFilter with the specified log level.
+
+        Args:
+            level (str): The log level to filter for.
+        """
         self.level = level
 
     def filter(self, record):
-        return record.levelname == self.level
+        """
+        Determine if the log record matches the specified log level.
 
+        Args:
+            record (logging.LogRecord): The log record to evaluate.
 
-class LevelFilter(logging.Filter):
-    def __init__(self, level):
-        self.level = level
-
-    def filter(self, record):
+        Returns:
+            bool: True if the log record's level matches the specified level, False otherwise.
+        """
         return record.levelname == self.level
 
 
 class RequestFilter(logging.Filter):
+    """
+    A logging filter that allows log records with specific HTTP status codes to pass through.
+
+    This filter checks if the log record contains arguments (`args`) and evaluates the second-to-last argument as an HTTP status code. Only status codes in the range 100-599 are allowed.
+    """
+
     def filter(self, record):
+        """
+        Determine if the log record contains a valid HTTP status code in the range 100-599.
+
+        Args:
+            record (logging.LogRecord): The log record to evaluate.
+
+        Returns:
+            bool: True if the log record contains a valid HTTP status code, False otherwise.
+        """
         if getattr(record, "args", None):
             log_info = record.args
             try:
                 code = log_info[-2]
                 code = int(code)
-                if code >= 100:
-                    if code < 600:
-                        return True
+                if code >= 100 and code < 600:
+                    return True
                 return False
             except:
                 return False
@@ -182,8 +206,11 @@ class RequestFilter(logging.Filter):
 
 
 LOGGING = {
+    # Specifies the version of the logging configuration schema and whether to disable existing loggers.
     "version": 1,
     "disable_existing_loggers": False,
+
+    # Formatters define the structure of log messages.
     "formatters": {
         "verbose": {
             "format": "[%(asctime)s]: %(levelname)s : %(message)s",
@@ -192,6 +219,8 @@ LOGGING = {
             "format": "%(levelname)s : %(message)s",
         },
     },
+
+    # Filters control which log records are processed based on custom criteria.
     "filters": {
         "warning_filter": {
             "()": "core.settings.LevelFilter",
@@ -205,6 +234,8 @@ LOGGING = {
             "()": "core.settings.RequestFilter",
         },
     },
+
+    # Handlers define where log messages are sent (e.g., files, console).
     "handlers": {
         "file_warning": {
             "level": "WARNING",
@@ -239,6 +270,8 @@ LOGGING = {
             "formatter": "verbose",
         },
     },
+
+    # Loggers define the configuration for specific logging categories.
     "loggers": {
         "django": {
             "handlers": [

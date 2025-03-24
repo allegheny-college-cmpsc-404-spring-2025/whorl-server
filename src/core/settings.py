@@ -192,13 +192,17 @@ class RequestFilter(logging.Filter):
 
     def filter(self, record):
         """
-         Determine if the log record has certain arguments like a request type and status code.
+        Filters log records based on the presence of specific HTTP request types and status codes.
+
+        This method evaluates whether a log record contains arguments (`args`) that include a valid HTTP status code 
+        and a recognized HTTP request type (e.g., POST, GET). If both conditions are met, the log record is allowed 
+        to pass through the filter.
 
         Args:
             record (logging.LogRecord): The log record to evaluate.
 
         Returns:
-            bool: True if the log record's contains a request type and status code
+            bool: True if the log record contains a valid HTTP request type and status code, False otherwise.
         """
         request_types: set = {"POST", "GET", "PATCH", "DELETE"}
         http_status_codes: set = {
@@ -350,33 +354,48 @@ LOGGING = {
 }
 
 
-# rotate through the file logs
-
+# Rotate through the file logs by compressing and archiving old log files.
+# Get the current date to use in the archived log file name.
 current_date = datetime.date.today()
 
+# Define the absolute path to the logs directory and the debug log file.
 absolute_path_to_logs = os.path.abspath("src/logs")
 file_path = os.path.abspath("src/logs/debug.log")
+
+# Define the path for the compressed log file in the 'past_logs' directory.
 new_file_path = os.path.join("src/past_logs", str(current_date) + ".gz")
-# print(absolute_path_to_logs)
-# print(file_path)
 
 def compress_old_logs():
     """
-    Moves and compresses rotated log files into 'past_logs' directory."
+    Compresses the current debug log file and moves it to the 'past_logs' directory.
+
+    This function performs the following steps:
+    1. Compresses the `debug.log` file into a `.gz` file.
+    2. Clears the contents of all log files in the `src/logs` directory.
+    3. Ensures that any missing log files in the `src/logs` directory are created.
+
+    After execution, the compressed log file is stored in the `src/past_logs` directory
+    with the current date as its name.
+
+    Prints:
+        - Confirmation messages for compression and file clearing.
     """
-    # Compress log file
+    # Compress the debug log file.
     with open(file_path, "rb") as f_in, gzip.open(new_file_path, "wb") as f_out:
-        print("this works")
+        print("Compressing log file...")
         shutil.copyfileobj(f_in, f_out)
 
-    # Clear all the files in src/logs log file after compression
+    # Clear all files in the `src/logs` directory after compression.
     for file in os.listdir(absolute_path_to_logs):
         logs_file_path = os.path.join(absolute_path_to_logs, file)
         if not os.path.exists(logs_file_path):
+            # Create the file if it does not exist.
             open(file, 'w').close()
-            print(f"File added: {logs_file_path}")
+            print(f"File created: {logs_file_path}")
+        # Truncate the file to clear its contents.
         open(logs_file_path, 'r+').truncate(0)
 
     print(f"Compressed and moved: {new_file_path}")
 
+# Schedule the log compression task to run every 5 minutes.
 schedule.every(5).minutes.do(compress_old_logs)

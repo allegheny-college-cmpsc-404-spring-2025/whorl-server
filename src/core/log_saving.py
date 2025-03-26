@@ -1,8 +1,6 @@
 import os
 import gzip
 import shutil
-# import logging
-# from logging.handlers import TimedRotatingFileHandler
 import datetime
 import pathlib
 import logging
@@ -50,6 +48,7 @@ from logging.handlers import TimedRotatingFileHandler
 
 
 
+# Get the current date to use in the compressed log file name.
 current_date = datetime.date.today()
 
 # logging.basicConfig(filename='scheduler.log')

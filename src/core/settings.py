@@ -194,13 +194,17 @@ class RequestFilter(logging.Filter):
 
     def filter(self, record):
         """
-         Determine if the log record has certain arguments like a request type and status code.
+        Filters log records based on the presence of specific HTTP request types and status codes.
+
+        This method evaluates whether a log record contains arguments (`args`) that include a valid HTTP status code 
+        and a recognized HTTP request type (e.g., POST, GET). If both conditions are met, the log record is allowed 
+        to pass through the filter.
 
         Args:
             record (logging.LogRecord): The log record to evaluate.
 
         Returns:
-            bool: True if the log record's contains a request type and status code
+            bool: True if the log record contains a valid HTTP request type and status code, False otherwise.
         """
         request_types: set = {"POST", "GET", "PATCH", "DELETE"}
         http_status_codes: set = {
@@ -352,8 +356,8 @@ LOGGING = {
 }
 
 
-# rotate through the file logs
-
+# Rotate through the file logs by compressing and archiving old log files.
+# Get the current date to use in the archived log file name.
 current_date = datetime.date.today()
 
 # logging.basicConfig(filename='scheduler.log')
@@ -403,3 +407,18 @@ handler = GzipTimedRotatingFileHandler(log_file_name, when='M', interval=1)
 
 # # Add the handler to the logger
 # logger.addHandler(handler)
+
+"""
+    Compresses the current debug log file and moves it to the 'past_logs' directory.
+
+    This function performs the following steps:
+    1. Compresses the `debug.log` file into a `.gz` file.
+    2. Clears the contents of all log files in the `src/logs` directory.
+    3. Ensures that any missing log files in the `src/logs` directory are created.
+
+    After execution, the compressed log file is stored in the `src/past_logs` directory
+    with the current date as its name.
+
+    Prints:
+        - Confirmation messages for compression and file clearing.
+    """

@@ -383,10 +383,6 @@ class GzipTimedRotatingFileHandler(TimedRotatingFileHandler):
                 open(logs_file_path, 'r+').truncate(0)
 
 
-# Configure logging
-# logger = logging.getLogger(__name__)
-# logger.setLevel(logging.DEBUG)
-
 
 logging.basicConfig(filename='scheduler.log')
 schedule_logger = logging.getLogger('schedule')

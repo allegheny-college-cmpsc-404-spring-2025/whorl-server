@@ -1,4 +1,3 @@
-# filepath: /Users/aidandyga/Downloads/WebApplications/whorl-server/loki-config.yaml
 auth_enabled: false
 
 server:

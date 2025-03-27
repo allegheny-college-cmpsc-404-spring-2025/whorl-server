@@ -368,19 +368,43 @@ current_date = datetime.date.today()
 class GzipTimedRotatingFileHandler(TimedRotatingFileHandler):
     def doRollover(self):
         super().doRollover()
-        # log_file = self.baseFilename
-        if os.path.exists(file_path):
-            with open(file_path, 'rb') as f_in, gzip.open(log_file_name, "wb") as f_out:
-                print(f_in)
+        
+        # this is opening and writing to debug.log file
+        log_file = self.baseFilename
+        if os.path.exists(log_file):
+
+            MODULE_PATH = pathlib.Path(log_file).parent.resolve()
+            # logs_directory = os.path.join(MODULE_PATH, "logs")
+            # file_path = os.path.join(absolute_path_to_logs, "debug.log")
+            new_location = os.path.join(MODULE_PATH, "past_logs", str(current_date) + ".gz")
+
+            with open(log_file, 'rb') as f_in, gzip.open(new_location, 'wb') as f_out:
+                # f_out.writelines(f_in)
+                print("this works")
                 shutil.copyfileobj(f_in, f_out)
 
             # Clear all the files in src/logs log file after compression
-            for file in os.listdir(absolute_path_to_logs):
-                logs_file_path = os.path.join(absolute_path_to_logs, file)
-                if not os.path.exists(logs_file_path):
-                    open(file, 'w').close()
-                    print(f"File added: {logs_file_path}")
-                open(logs_file_path, 'r+').truncate(0)
+            #     for file in os.listdir(absolute_path_to_logs):
+            #         logs_file_path = os.path.join(absolute_path_to_logs, file)
+            #         if not os.path.exists(logs_file_path):
+            #             open(file, 'w').close()
+            #             print(f"File added: {logs_file_path}")
+            #         open(logs_file_path, 'r+').truncate(0)
+
+            # os.remove(log_file)
+        # # the file opened is the file the program is also writing to
+        # if os.path.exists(file_path):
+        #     with open(file_path, 'rb') as f_in, gzip.open(log_file_name, "wb") as f_out:
+        #         print(f_in)
+        #         shutil.copyfileobj(f_in, f_out)
+
+        #     # Clear all the files in src/logs log file after compression
+        #     for file in os.listdir(absolute_path_to_logs):
+        #         logs_file_path = os.path.join(absolute_path_to_logs, file)
+        #         if not os.path.exists(logs_file_path):
+        #             open(file, 'w').close()
+        #             print(f"File added: {logs_file_path}")
+        #         open(logs_file_path, 'r+').truncate(0)
 
 
 
@@ -394,7 +418,7 @@ file_path = os.path.join(absolute_path_to_logs, "debug.log")
 log_file_name = os.path.join(MODULE_PATH, "past_logs", str(current_date) + ".gz")
 
 # handler = GzipTimedRotatingFileHandler(log_file_name, when='S', interval=5, backupCount=5)
-handler = GzipTimedRotatingFileHandler(log_file_name, when='M', interval=1)
+handler = GzipTimedRotatingFileHandler(file_path, when='M', interval=1)
 # handler = GzipTimedRotatingFileHandler(log_file_name, when='midnight')
 
 # Set the log message format

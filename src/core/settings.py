@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import logging
 import threading
 import requests
+
 # for writing logs to a file
 import gzip
 import shutil
@@ -69,6 +70,7 @@ ROOT_URLCONF = "core.urls"
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
+    "django_prometheus",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
@@ -84,6 +86,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -92,6 +95,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "core.middleware.GitHubTokenAuthenticationMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 TEMPLATES = [
@@ -183,6 +187,15 @@ class LevelFilter(logging.Filter):
         return record.levelname == self.level
 
 
+class ScraperFilter(logging.Filter):
+    def filter(self, record):
+        arg = getattr(record, "args", None)
+        if arg:
+            if "/metrics" in arg[0]:
+                return False
+        return True
+
+
 class RequestFilter(logging.Filter):
     """Filter by if it has a standard HTTP request format"""
 
@@ -196,8 +209,8 @@ class RequestFilter(logging.Filter):
         """
         Filters log records based on the presence of specific HTTP request types and status codes.
 
-        This method evaluates whether a log record contains arguments (`args`) that include a valid HTTP status code 
-        and a recognized HTTP request type (e.g., POST, GET). If both conditions are met, the log record is allowed 
+        This method evaluates whether a log record contains arguments (`args`) that include a valid HTTP status code
+        and a recognized HTTP request type (e.g., POST, GET). If both conditions are met, the log record is allowed
         to pass through the filter.
 
         Args:
@@ -291,7 +304,7 @@ LOGGING = {
     # Formatters define the structure of log messages.
     "formatters": {
         "verbose": {
-            "format": "[%(asctime)s]: %(levelname)s : %(message)s",
+            "format": "[%(asctime)s] : %(levelname)s : %(message)s",
         },
         "simple": {
             "format": "%(levelname)s : %(message)s",
@@ -310,6 +323,9 @@ LOGGING = {
         "request_filter": {
             "()": "core.settings.RequestFilter",
         },
+        "scraping_filter": {
+            "()": "core.settings.ScraperFilter",
+        },
     },
     # Handlers define where log messages are sent (e.g., files, console).
     "handlers": {
@@ -318,20 +334,20 @@ LOGGING = {
             "class": "logging.FileHandler",
             "filename": os.path.join(BASE_DIR, "logs/error.log"),
             "formatter": "verbose",
-            "filters": ["warning_filter", "request_filter"],
+            "filters": ["warning_filter", "request_filter", "scraping_filter"],
         },
         "file_info": {
             "level": "INFO",
             "class": "logging.FileHandler",
             "filename": os.path.join(BASE_DIR, "logs/requests.log"),
             "formatter": "verbose",
-            "filters": ["request_filter"],
+            "filters": ["request_filter", "scraping_filter"],
         },
         "console": {
             "level": "INFO",
             "class": "logging.StreamHandler",
             "formatter": "verbose",
-            "filters": ["request_filter"],
+            "filters": ["request_filter", "scraping_filter"],
         },
         "file_debug": {
             "level": "DEBUG",
@@ -368,17 +384,18 @@ current_date = datetime.date.today()
 class GzipTimedRotatingFileHandler(TimedRotatingFileHandler):
     def doRollover(self):
         super().doRollover()
-        
+
         # this is opening and writing to debug.log file
         log_file = self.baseFilename
         if os.path.exists(log_file):
-
             MODULE_PATH = pathlib.Path(log_file).parent.resolve()
             # logs_directory = os.path.join(MODULE_PATH, "logs")
             # file_path = os.path.join(absolute_path_to_logs, "debug.log")
-            new_location = os.path.join(MODULE_PATH, "past_logs", str(current_date) + ".gz")
+            new_location = os.path.join(
+                MODULE_PATH, "past_logs", str(current_date) + ".gz"
+            )
 
-            with open(log_file, 'rb') as f_in, gzip.open(new_location, 'wb') as f_out:
+            with open(log_file, "rb") as f_in, gzip.open(new_location, "wb") as f_out:
                 # f_out.writelines(f_in)
                 print("this works")
                 shutil.copyfileobj(f_in, f_out)
@@ -407,9 +424,8 @@ class GzipTimedRotatingFileHandler(TimedRotatingFileHandler):
         #         open(logs_file_path, 'r+').truncate(0)
 
 
-
-logging.basicConfig(filename='scheduler.log')
-schedule_logger = logging.getLogger('schedule')
+logging.basicConfig(filename="scheduler.log")
+schedule_logger = logging.getLogger("schedule")
 schedule_logger.setLevel(level=logging.DEBUG)
 
 MODULE_PATH = pathlib.Path(__file__).parent.parent.resolve()
@@ -418,7 +434,7 @@ file_path = os.path.join(absolute_path_to_logs, "debug.log")
 log_file_name = os.path.join(MODULE_PATH, "past_logs", str(current_date) + ".gz")
 
 # handler = GzipTimedRotatingFileHandler(log_file_name, when='S', interval=5, backupCount=5)
-handler = GzipTimedRotatingFileHandler(file_path, when='M', interval=1)
+handler = GzipTimedRotatingFileHandler(file_path, when="M", interval=1)
 # handler = GzipTimedRotatingFileHandler(log_file_name, when='midnight')
 
 # Set the log message format
@@ -427,18 +443,3 @@ handler = GzipTimedRotatingFileHandler(file_path, when='M', interval=1)
 
 # # Add the handler to the logger
 # logger.addHandler(handler)
-
-"""
-    Compresses the current debug log file and moves it to the 'past_logs' directory.
-
-    This function performs the following steps:
-    1. Compresses the `debug.log` file into a `.gz` file.
-    2. Clears the contents of all log files in the `src/logs` directory.
-    3. Ensures that any missing log files in the `src/logs` directory are created.
-
-    After execution, the compressed log file is stored in the `src/past_logs` directory
-    with the current date as its name.
-
-    Prints:
-        - Confirmation messages for compression and file clearing.
-    """

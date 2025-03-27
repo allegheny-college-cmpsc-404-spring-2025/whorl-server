@@ -10,6 +10,7 @@ import shutil
 import datetime
 import schedule
 import pathlib
+import time
 from logging.handlers import TimedRotatingFileHandler
 
 from pathlib import Path
@@ -70,7 +71,7 @@ ROOT_URLCONF = "core.urls"
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
-    "django_prometheus",
+    # "django_prometheus",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
@@ -86,7 +87,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "django_prometheus.middleware.PrometheusBeforeMiddleware",
+    # "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -95,7 +96,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "core.middleware.GitHubTokenAuthenticationMiddleware",
-    "django_prometheus.middleware.PrometheusAfterMiddleware",
+    # "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 TEMPLATES = [
@@ -376,70 +377,44 @@ LOGGING = {
 # Get the current date to use in the archived log file name.
 current_date = datetime.date.today()
 
-# logging.basicConfig(filename='scheduler.log')
-# schedule_logger = logging.getLogger('schedule')
-# schedule_logger.setLevel(level=logging.DEBUG)
-
-
-class GzipTimedRotatingFileHandler(TimedRotatingFileHandler):
-    def doRollover(self):
-        super().doRollover()
-
-        # this is opening and writing to debug.log file
-        log_file = self.baseFilename
-        if os.path.exists(log_file):
-            MODULE_PATH = pathlib.Path(log_file).parent.resolve()
-            # logs_directory = os.path.join(MODULE_PATH, "logs")
-            # file_path = os.path.join(absolute_path_to_logs, "debug.log")
-            new_location = os.path.join(
-                MODULE_PATH, "past_logs", str(current_date) + ".gz"
-            )
-
-            with open(log_file, "rb") as f_in, gzip.open(new_location, "wb") as f_out:
-                # f_out.writelines(f_in)
-                print("this works")
-                shutil.copyfileobj(f_in, f_out)
-
-            # Clear all the files in src/logs log file after compression
-            #     for file in os.listdir(absolute_path_to_logs):
-            #         logs_file_path = os.path.join(absolute_path_to_logs, file)
-            #         if not os.path.exists(logs_file_path):
-            #             open(file, 'w').close()
-            #             print(f"File added: {logs_file_path}")
-            #         open(logs_file_path, 'r+').truncate(0)
-
-            # os.remove(log_file)
-        # # the file opened is the file the program is also writing to
-        # if os.path.exists(file_path):
-        #     with open(file_path, 'rb') as f_in, gzip.open(log_file_name, "wb") as f_out:
-        #         print(f_in)
-        #         shutil.copyfileobj(f_in, f_out)
-
-        #     # Clear all the files in src/logs log file after compression
-        #     for file in os.listdir(absolute_path_to_logs):
-        #         logs_file_path = os.path.join(absolute_path_to_logs, file)
-        #         if not os.path.exists(logs_file_path):
-        #             open(file, 'w').close()
-        #             print(f"File added: {logs_file_path}")
-        #         open(logs_file_path, 'r+').truncate(0)
-
-
-logging.basicConfig(filename="scheduler.log")
-schedule_logger = logging.getLogger("schedule")
+logging.basicConfig(filename='scheduler.log')
+schedule_logger = logging.getLogger('schedule')
 schedule_logger.setLevel(level=logging.DEBUG)
 
+# # find the different file paths
 MODULE_PATH = pathlib.Path(__file__).parent.parent.resolve()
 absolute_path_to_logs = os.path.join(MODULE_PATH, "logs")
 file_path = os.path.join(absolute_path_to_logs, "debug.log")
-log_file_name = os.path.join(MODULE_PATH, "past_logs", str(current_date) + ".gz")
+new_file_path = os.path.join(MODULE_PATH, "past_logs", str(current_date) + ".gz")
 
-# handler = GzipTimedRotatingFileHandler(log_file_name, when='S', interval=5, backupCount=5)
-handler = GzipTimedRotatingFileHandler(file_path, when="M", interval=1)
-# handler = GzipTimedRotatingFileHandler(log_file_name, when='midnight')
+def compress_old_logs():
+    """
+    Moves and compresses rotated log files into 'past_logs' directory."
+    """
+    # Compress log file
+    with open(file_path, "rb") as f_in, gzip.open(new_file_path, "wb") as f_out:
+        print("this works: ", current_date)
+        shutil.copyfileobj(f_in, f_out)
 
-# Set the log message format
-# formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-# handler.setFormatter(formatter)
+    # Clear all the files in src/logs log file after compression
+    for file in os.listdir(absolute_path_to_logs):
+        logs_file_path = os.path.join(absolute_path_to_logs, file)
+        if not os.path.exists(logs_file_path):
+            open(file, 'w').close()
+            print(f"File added: {logs_file_path}")
+        open(logs_file_path, 'r+').truncate(0)
 
-# # Add the handler to the logger
-# logger.addHandler(handler)
+    print(f"Compressed and moved: {new_file_path}")
+
+def job():
+    print("Executing the scheduled job")
+    # Add your task logic here
+    # return "Job completed"
+    compress_old_logs()
+
+# schedule.every(1).minutes.do(job)
+schedule.every().day.at("00:00").do(job)
+
+# while True:
+#     schedule.run_pending()
+    # time.sleep(1)

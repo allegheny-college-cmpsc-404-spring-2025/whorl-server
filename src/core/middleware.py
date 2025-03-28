@@ -51,8 +51,6 @@ class GitHubTokenAuthenticationMiddleware:
         if headers.get("HTTP_REFERER"):
             if "/metrics" in headers.get("HTTP_REFERER"):
                 return self.get_response(request)
-            if "/graph" in headers.get("HTTP_REFERER"):
-                return self.get_response(request)
         if "/metrics" in headers.get("PATH_INFO"):
             return self.get_response(request)
         token = headers.get("HTTP_AUTHORIZATION")

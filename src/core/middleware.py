@@ -15,7 +15,7 @@ from django.http import JsonResponse
 class GitHubTokenAuthenticationMiddleware:
     """
     Middleware to authenticate requests using a GitHub token.
-    
+
     This middleware intercepts incoming requests and validates the GitHub
     authentication token provided in the HTTP_AUTHORIZATION header against
     the GitHub API. It ensures that the token is valid and belongs to the
@@ -25,7 +25,7 @@ class GitHubTokenAuthenticationMiddleware:
     def __init__(self, get_response):
         """
         Initialize the middleware with the given response handler.
-        
+
         Args:
             get_response: The next middleware or view in the Django request/response chain
         """
@@ -34,20 +34,27 @@ class GitHubTokenAuthenticationMiddleware:
     def __call__(self, request):
         """
         Process the incoming request and authenticate the GitHub token.
-        
+
         This method extracts the GitHub token from the request headers,
         validates it against the GitHub API, and ensures the token belongs
         to the specified user. If authentication succeeds, the request is
         passed to the next handler; otherwise, a 403 Forbidden response is returned.
-        
+
         Args:
             request: The Django HttpRequest object
-            
+
         Returns:
             HttpResponse: Either the response from the next handler if authentication
             succeeds, or a 403 Forbidden JsonResponse if it fails
         """
         headers = request.META
+        if headers.get("HTTP_REFERER"):
+            if "/metrics" in headers.get("HTTP_REFERER"):
+                return self.get_response(request)
+            if "/graph" in headers.get("HTTP_REFERER"):
+                return self.get_response(request)
+        if "/metrics" in headers.get("PATH_INFO"):
+            return self.get_response(request)
         token = headers.get("HTTP_AUTHORIZATION")
         http_user = headers.get("HTTP_USER")
 

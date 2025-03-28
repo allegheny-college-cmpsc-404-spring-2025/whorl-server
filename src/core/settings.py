@@ -374,4 +374,3 @@ LOGGING = {
 
 # call the file that performs log saving
 os.system("python core/python_scheduler.py")
-# print("this is running")

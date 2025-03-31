@@ -16,10 +16,9 @@ dependencies = [
     "django-pgtrigger",
     "django_rest_swagger",
     "drf-yasg",
-    "django_rest_framework"
+    "django_rest_framework",
+    "schedule"
 ]
-
-schedule
 
 readme = "README.md"
 description = "Server-sided API interaction installed to Codespaces container."

@@ -424,7 +424,7 @@ def compress_old_logs():
     print(f"Compressed and moved: {new_file_path}")
 
 # Schedule the `compress_old_logs` function to run daily at midnight
-schedule.every().day.at("12:04").do(compress_old_logs)
+schedule.every().day.at("00:00").do(compress_old_logs)
 
 # Run the scheduler in an infinite loop
 while True:

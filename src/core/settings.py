@@ -372,5 +372,9 @@ LOGGING = {
     },
 }
 
+MODULE_PATH = pathlib.Path(__file__).parent.resolve()
+path_to_file = os.path.join(MODULE_PATH, "python_scheduler.py")
+
+# print(path_to_file)
 # call the file that performs log saving
-os.system("python core/python_scheduler.py")
+os.system(f"python {path_to_file}")

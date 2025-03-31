@@ -427,12 +427,12 @@ def compress_old_logs():
 schedule.every().day.at("00:00").do(compress_old_logs)
 
 # Run the scheduler in an infinite loop
-while True:
-    """
-    Continuously checks and runs any scheduled tasks.
+# while True:
+#     """
+#     Continuously checks and runs any scheduled tasks.
 
-    This loop ensures that the scheduled tasks are executed at their specified times.
-    It sleeps for 1 second between checks to avoid excessive CPU usage.
-    """
-    schedule.run_pending()
-    time.sleep(1)
+#     This loop ensures that the scheduled tasks are executed at their specified times.
+#     It sleeps for 1 second between checks to avoid excessive CPU usage.
+#     """
+#     schedule.run_pending()
+#     time.sleep(1)

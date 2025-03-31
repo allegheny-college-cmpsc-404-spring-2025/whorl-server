@@ -19,6 +19,8 @@ dependencies = [
     "django_rest_framework"
 ]
 
+schedule
+
 readme = "README.md"
 description = "Server-sided API interaction installed to Codespaces container."
 

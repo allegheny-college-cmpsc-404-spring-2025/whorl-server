@@ -17,7 +17,7 @@ dependencies = [
     "django_rest_swagger",
     "drf-yasg",
     "django_rest_framework",
-    "schedule"
+    "schedule",
     "django_prometheus"
 ]
 

@@ -380,10 +380,10 @@ current_date = datetime.date.today()
 MODULE_PATH = pathlib.Path(__file__).parent.parent.resolve()
 path_to_compresser = os.path.join(MODULE_PATH, "core/python_scheduler.py")
     
-# username = os.getlogin()
-# print(username)
+username = os.getlogin()
+print(username)
 
-cron = CronTab(user='student')
+cron = CronTab(user=username)
 command = f'python {path_to_compresser}'
 job = cron.new(command=command, comment='My Python script ran')
 job.minute.every(1)

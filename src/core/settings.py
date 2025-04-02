@@ -371,13 +371,6 @@ LOGGING = {
     },
 }
 
-# MODULE_PATH = pathlib.Path(__file__).parent.resolve()
-# path_to_file = os.path.join(MODULE_PATH, "python_scheduler.py")
-
-# print(path_to_file)
-# call the file that performs log saving
-# os.system(f"python {path_to_file}")
-
 
 # Get the current date
 current_date = datetime.date.today()
@@ -389,7 +382,6 @@ absolute_path_to_logs = os.path.join(MODULE_PATH, "logs")
 # Configure logging for the scheduler
 with open("scheduler.log", "a"):
     print("The file has been created")
-    # f.write("This will be appended to the file.\n")
 
 schedule_path = os.path.join(absolute_path_to_logs, "scheduler.log")
 

@@ -383,7 +383,12 @@ LOGGING = {
 current_date = datetime.date.today()
 
 # Configure logging for the scheduler
-logging.basicConfig(filename="scheduler.log")
+with open("scheduler.log", "a"):
+    print("The file has been created")
+    # f.write("This will be appended to the file.\n")
+
+
+logging.basicConfig(filename="scheduler.log", filemode="w")
 schedule_logger = logging.getLogger("schedule")
 schedule_logger.setLevel(level=logging.DEBUG)
 

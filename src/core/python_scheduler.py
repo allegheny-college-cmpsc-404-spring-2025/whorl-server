@@ -19,7 +19,7 @@ schedule_logger.setLevel(level=logging.DEBUG)
 MODULE_PATH = pathlib.Path(__file__).parent.parent.resolve()
 absolute_path_to_logs = os.path.join(MODULE_PATH, "logs")
 file_path = os.path.join(absolute_path_to_logs, "debug.log")
-new_file_path = os.path.join(MODULE_PATH, "past_logs", str(current_date) + ".gz")
+new_file_path = os.path.join(absolute_path_to_logs, str(current_date) + ".gz")
 
 def compress_old_logs():
     """
@@ -34,33 +34,22 @@ def compress_old_logs():
         FileNotFoundError: If the `debug.log` file does not exist.
         IOError: If there is an issue reading or writing files.
     """
+    print('function is being called')
     # Compress the log file
     with open(file_path, "rb") as f_in, gzip.open(new_file_path, "wb") as f_out:
         print("Compressing log file...")
         shutil.copyfileobj(f_in, f_out)
 
     # Clear all files in the logs directory after compression
-    for file in os.listdir(absolute_path_to_logs):
-        logs_file_path = os.path.join(absolute_path_to_logs, file)
-        if not os.path.exists(logs_file_path):
-            # Create the file if it doesn't exist
-            open(file, 'w').close()
-            print(f"File created: {logs_file_path}")
-        # Truncate the file to clear its contents
-        open(logs_file_path, 'r+').truncate(0)
+    # for file in os.listdir(absolute_path_to_logs):
+    #     logs_file_path = os.path.join(absolute_path_to_logs, file)
+    if not os.path.exists(file_path):
+        # Create the file if it doesn't exist
+        open(file_path, "w").close()
+        print(f"File created: {file_path}")
+    # Truncate the file to clear its contents
+    open(file_path, "r+").truncate(0)
 
     print(f"Compressed and moved: {new_file_path}")
 
-# Schedule the `compress_old_logs` function to run daily at midnight
-schedule.every().day.at("00:00").do(compress_old_logs)
-
-# Run the scheduler in an infinite loop
-while True:
-    """
-    Continuously checks and runs any scheduled tasks.
-
-    This loop ensures that the scheduled tasks are executed at their specified times.
-    It sleeps for 1 second between checks to avoid excessive CPU usage.
-    """
-    schedule.run_pending()
-    time.sleep(1)
+compress_old_logs()

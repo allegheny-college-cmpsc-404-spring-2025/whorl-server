@@ -18,7 +18,8 @@ dependencies = [
     "drf-yasg",
     "django_rest_framework",
     "schedule",
-    "django_prometheus"
+    "django_prometheus",
+    "crontab"
 ]
 
 readme = "README.md"

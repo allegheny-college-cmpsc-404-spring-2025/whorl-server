@@ -94,8 +94,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "core.middleware.GitHubTokenAuthenticationMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
+    "core.middleware.GitHubTokenAuthenticationMiddleware",
 ]
 
 TEMPLATES = [
@@ -383,8 +383,8 @@ LOGGING = {
 current_date = datetime.date.today()
 
 # Configure logging for the scheduler
-logging.basicConfig(filename='scheduler.log')
-schedule_logger = logging.getLogger('schedule')
+logging.basicConfig(filename="scheduler.log")
+schedule_logger = logging.getLogger("schedule")
 schedule_logger.setLevel(level=logging.DEBUG)
 
 # Define paths for logs and compressed files
@@ -392,6 +392,7 @@ MODULE_PATH = pathlib.Path(__file__).parent.parent.resolve()
 absolute_path_to_logs = os.path.join(MODULE_PATH, "logs")
 file_path = os.path.join(absolute_path_to_logs, "debug.log")
 new_file_path = os.path.join(MODULE_PATH, "past_logs", str(current_date) + ".gz")
+
 
 def compress_old_logs():
     """
@@ -416,12 +417,13 @@ def compress_old_logs():
         logs_file_path = os.path.join(absolute_path_to_logs, file)
         if not os.path.exists(logs_file_path):
             # Create the file if it doesn't exist
-            open(file, 'w').close()
+            open(file, "w").close()
             print(f"File created: {logs_file_path}")
         # Truncate the file to clear its contents
-        open(logs_file_path, 'r+').truncate(0)
+        open(logs_file_path, "r+").truncate(0)
 
     print(f"Compressed and moved: {new_file_path}")
+
 
 # Schedule the `compress_old_logs` function to run daily at midnight
 schedule.every().day.at("00:00").do(compress_old_logs)

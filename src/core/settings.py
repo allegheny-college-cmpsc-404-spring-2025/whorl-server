@@ -391,7 +391,7 @@ schedule_logger.setLevel(level=logging.DEBUG)
 MODULE_PATH = pathlib.Path(__file__).parent.parent.resolve()
 absolute_path_to_logs = os.path.join(MODULE_PATH, "logs")
 file_path = os.path.join(absolute_path_to_logs, "debug.log")
-new_file_path = os.path.join(MODULE_PATH, "past_logs", str(current_date) + ".gz")
+new_file_path = os.path.join(absolute_path_to_logs, str(current_date) + ".gz")
 
 def compress_old_logs():
     """

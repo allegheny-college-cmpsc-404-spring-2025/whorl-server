@@ -19,7 +19,7 @@ dependencies = [
     "django_rest_framework",
     "schedule",
     "django_prometheus",
-    "crontab"
+    "python-crontab"
 ]
 
 readme = "README.md"

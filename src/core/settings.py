@@ -382,19 +382,21 @@ LOGGING = {
 # Get the current date
 current_date = datetime.date.today()
 
+# Define paths for logs and compressed files
+MODULE_PATH = pathlib.Path(__file__).parent.parent.resolve()
+absolute_path_to_logs = os.path.join(MODULE_PATH, "logs")
+
 # Configure logging for the scheduler
 with open("scheduler.log", "a"):
     print("The file has been created")
     # f.write("This will be appended to the file.\n")
 
+schedule_path = os.path.join(absolute_path_to_logs, "scheduler.log")
 
-logging.basicConfig(filename="scheduler.log", filemode="w")
+logging.basicConfig(filename=absolute_path_to_logs, filemode="w")
 schedule_logger = logging.getLogger("schedule")
 schedule_logger.setLevel(level=logging.DEBUG)
 
-# Define paths for logs and compressed files
-MODULE_PATH = pathlib.Path(__file__).parent.parent.resolve()
-absolute_path_to_logs = os.path.join(MODULE_PATH, "logs")
 file_path = os.path.join(absolute_path_to_logs, "debug.log")
 new_file_path = os.path.join(absolute_path_to_logs, str(current_date) + ".gz")
 

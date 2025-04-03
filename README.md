@@ -218,3 +218,27 @@ If you are part of the `whorl` organization, you can find the keys in the `.env`
      ```bash
      climate
      ```
+
+## Prometheus Setup
+
+Prometheus is used to monitor the application by collecting metrics and providing a queryable interface for analysis. It views logs in Universal Time and integrates with Django to expose metrics.
+
+### Steps to Set Up Prometheus
+
+1. **Access Prometheus Dashboard**  
+   - Open your browser and navigate to:
+
+     ```text
+     http://localhost:9090
+     ```
+
+2. **Query Metrics**  
+   - Use the Prometheus query interface to view metrics. For example:
+     - To view the number of HTTP requests before middleware creation:
+
+       ```plaintext
+       django_http_requests_before_middlewares_created
+       ```
+
+3. **Visualize Metrics**  
+   - Use Prometheus' built-in graphing tools for visualizations.

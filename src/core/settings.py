@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import logging
 import threading
 import requests
+import pennant
 
 # for writing logs to a file
 import gzip
@@ -379,19 +380,19 @@ current_date = datetime.date.today()
 # Define paths for logs and compressed files
 MODULE_PATH = pathlib.Path(__file__).parent.parent.resolve()
 path_to_compresser = os.path.join(MODULE_PATH, "core/python_scheduler.py")
-    
-username = os.getlogin()
-print(username)
 
-cron = CronTab(user=username)
-command = f'python {path_to_compresser}'
-job = cron.new(command=command)
-# job.minute.every(1)
-# sets job daily
-job.setall('0 0 * * *')
-cron.write()
-# print("running")
+# username = os.getlogin()
 
-for job in cron:
-    if job.comment == 'My Python script':
-        print(job)
+with pennant.FEATURE_FLAG_CODE(os.getenv("CRON")):
+    cron = CronTab(user=username)
+    command = f'python {path_to_compresser}'
+    job = cron.new(command=command)
+    # job.minute.every(1)
+    # sets job daily
+    job.setall('0 0 * * *')
+    cron.write()
+    # print("running")
+
+    for job in cron:
+        if job.comment == 'My Python script':
+            print(job)

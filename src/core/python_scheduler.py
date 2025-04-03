@@ -11,9 +11,9 @@ import pathlib
 current_date = datetime.date.today()
 
 # Configure logging for the scheduler
-# logging.basicConfig(filename='scheduler.log')
-# schedule_logger = logging.getLogger('schedule')
-# schedule_logger.setLevel(level=logging.DEBUG)
+logging.basicConfig(filename='scheduler.log')
+schedule_logger = logging.getLogger('schedule')
+schedule_logger.setLevel(level=logging.DEBUG)
 
 # Define paths for logs and compressed files
 MODULE_PATH = pathlib.Path(__file__).parent.parent.resolve()

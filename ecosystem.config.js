@@ -4,7 +4,7 @@ module.exports = {
     interpreter: "./.venv/bin/python",
     script: 'src/manage.py',
     args: 'runserver 0.0.0.0:8000',
-    ignore_watch: ["src/logs"],
+    ignore_watch: ["./src/logs", "data"],
     watch: '.'
   },
   {

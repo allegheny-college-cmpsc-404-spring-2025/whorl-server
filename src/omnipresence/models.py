@@ -2,6 +2,7 @@ import pgtrigger
 from datetime import datetime
 from django.db import models
 
+
 class OmnipresenceModel(models.Model):
 
     username = models.CharField(max_length = 255)

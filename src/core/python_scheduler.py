@@ -34,21 +34,23 @@ def compress_old_logs():
         FileNotFoundError: If the `debug.log` file does not exist.
         IOError: If there is an issue reading or writing files.
     """
-    print('function is being called')
-    # Compress the log file
-    with open(file_path, "rb") as f_in, gzip.open(new_file_path, "wb") as f_out:
-        print("Compressing log file...")
-        shutil.copyfileobj(f_in, f_out)
+    try:
+        # Compress the log file
+        with open(file_path, "rb") as f_in, gzip.open(new_file_path, "wb") as f_out:
+            print("Compressing log file...")
+            shutil.copyfileobj(f_in, f_out)
 
-    # Clear all files in the logs directory after compression
-    # for file in os.listdir(absolute_path_to_logs):
-    #     logs_file_path = os.path.join(absolute_path_to_logs, file)
-    if not os.path.exists(file_path):
-        # Create the file if it doesn't exist
-        open(file_path, "w").close()
-        print(f"File created: {file_path}")
-    # Truncate the file to clear its contents
-    open(file_path, "r+").truncate(0)
+        # Clear all files in the logs directory after compression
+        # for file in os.listdir(absolute_path_to_logs):
+        #     logs_file_path = os.path.join(absolute_path_to_logs, file)
+        if not os.path.exists(file_path):
+            # Create the file if it doesn't exist
+            open(file_path, "w").close()
+            print(f"File created: {file_path}")
+        # Truncate the file to clear its contents
+        open(file_path, "r+").truncate(0)
+    except Exception as e:
+        print("This is the exception: ", e)
 
     print(f"Compressed and moved: {new_file_path}")
 

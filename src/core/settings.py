@@ -385,15 +385,12 @@ print(username)
 
 cron = CronTab(user=username)
 command = f'python {path_to_compresser}'
-job = cron.new(command=command, comment='My Python script ran')
-job.minute.every(1)
-# job.hour.on(0)
-# job.minute.on(0)
-
+job = cron.new(command=command)
+# job.minute.every(1)
 # sets job daily
-# job.setall('0 0 * * *')
+job.setall('0 0 * * *')
 cron.write()
-print("running")
+# print("running")
 
 for job in cron:
     if job.comment == 'My Python script':

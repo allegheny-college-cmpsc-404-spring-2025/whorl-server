@@ -8,7 +8,7 @@ module.exports = {
   },
   {
     name: "prometheus",
-    script: "usr/bin/prometheus",
+    script: "../../usr/bin/prometheus",
     args: "--config.file=prometheus.yml"
   }
   ]

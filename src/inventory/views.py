@@ -173,7 +173,7 @@ class ListInventoryView(APIView):
     API view to list all inventory items for a specific inventory holder.
 
     This view handles GET requests to retieve inventory items associated
-    with a specific charaacter name. It queries the database for the inventory
+    with a specific character name. It queries the database for the inventory
     holder's ID, fetches the inventory items belonging to that ID, serilizies
     the data, and returns it as a JSON response.
 

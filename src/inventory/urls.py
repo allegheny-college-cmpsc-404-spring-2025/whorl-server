@@ -1,8 +1,17 @@
 from django.urls import path
-from .views import * #AddInventoryView, DropInventoryView, ListInventoryView, SearchInventoryView
-from rest_framework import permissions
+from .views import (
+    AddInventoryView,
+    ReduceInventoryView,
+    ListInventoryView,
+    SearchInventoryView,
+    GiveInventoryView,
+    BackpackAddItemView,
+    BackpackRemoveItemView,
+    BackpackListContentsView,
+)
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from rest_framework import permissions
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -19,10 +28,13 @@ schema_view = get_schema_view(
 app_name = 'inventory'
 
 urlpatterns = [
-    path('add/', AddInventoryView.as_view(), name='inventory-add'),  # Route for adding items
-    path('reduce/', ReduceInventoryView.as_view(), name = 'inventory-reduce'), # Route for reducing item count
-    path('list', ListInventoryView.as_view(), name='inventory-list'),  # Route for listing all items
-    path('search/', SearchInventoryView.as_view(), name = 'inventory-search'), # Route for searching user inventory
-    path('transfer/<str:to_charname>', GiveInventoryView.as_view(), name = 'inventory-transfer'), # Route for transferring items
-    path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),  # Swagger documentation
+    path('add/', AddInventoryView.as_view(), name='inventory-add'),
+    path('reduce/', ReduceInventoryView.as_view(), name='inventory-reduce'),
+    path('list/', ListInventoryView.as_view(), name='inventory-list'),
+    path('search/', SearchInventoryView.as_view(), name='inventory-search'),
+    path('transfer/<str:to_charname>/', GiveInventoryView.as_view(), name='inventory-transfer'),
+    path('backpack/add/', BackpackAddItemView.as_view(), name='backpack-add'),
+    path('backpack/remove/', BackpackRemoveItemView.as_view(), name='backpack-remove'),
+    path('backpack/contents/', BackpackListContentsView.as_view(), name='backpack-contents'),
+    path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]

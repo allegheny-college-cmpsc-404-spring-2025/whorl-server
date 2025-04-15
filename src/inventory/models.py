@@ -48,6 +48,9 @@ class Inventory(models.Model):
     item_version = models.CharField(max_length = 255, default = "1.0.0")
     item_consumable = models.BooleanField(default = False)
     item_bytestring = models.BinaryField(default = b'\x08', editable = True)
+    is_backpack = models.BooleanField(default=False)  # Indicates if the item is a backpack
+    backpack_capacity = models.IntegerField(default=0)  # Capacity of the backpack
+    backpack_contents = models.JSONField(default=list, blank=True)  # Contents of the backpack
 
     def __str__(self):
         return self.item_name
@@ -58,3 +61,24 @@ class Inventory(models.Model):
         for field in fields:
             result[field.name] = getattr(self, field.name)
         return result
+
+    def add_to_backpack(self, item):
+        """Add an item to the backpack."""
+        if not self.is_backpack:
+            raise ValueError("This item is not a backpack.")
+        if len(self.backpack_contents) < self.backpack_capacity:
+            self.backpack_contents.append(item.as_dict())
+            self.save()
+            return True
+        return False
+
+    def remove_from_backpack(self, item_name):
+        """Remove an item from the backpack by name."""
+        if not self.is_backpack:
+            raise ValueError("This item is not a backpack.")
+        for item in self.backpack_contents:
+            if item["item_name"] == item_name:
+                self.backpack_contents.remove(item)
+                self.save()
+                return item
+        return None

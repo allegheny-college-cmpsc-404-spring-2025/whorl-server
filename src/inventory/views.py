@@ -221,3 +221,56 @@ class GiveInventoryView(GenericAPIView, UpdateModelMixin):
         return HttpResponse(
             status = 200
         )
+    
+class BackpackAddItemView(APIView):
+    """Add an item to a backpack."""
+
+    def post(self, request, *args, **kwargs):
+        backpack_id = request.data.get("backpack_id")
+        item_id = request.data.get("item_id")
+
+        try:
+            backpack = Inventory.objects.get(id=backpack_id)
+            if not backpack.is_backpack:
+                return Response({"error": "This item is not a backpack."}, status=400)
+
+            item = Inventory.objects.get(id=item_id)
+            if backpack.add_to_backpack(item):
+                return Response({"message": "Item added to backpack."}, status=200)
+            return Response({"error": "Backpack is full."}, status=400)
+        except Inventory.DoesNotExist:
+            return Response({"error": "Backpack or item not found."}, status=404)
+
+class BackpackRemoveItemView(APIView):
+    """Remove an item from a backpack."""
+
+    def post(self, request, *args, **kwargs):
+        backpack_id = request.data.get("backpack_id")
+        item_name = request.data.get("item_name")
+
+        try:
+            backpack = Inventory.objects.get(id=backpack_id)
+            if not backpack.is_backpack:
+                return Response({"error": "This item is not a backpack."}, status=400)
+
+            removed_item = backpack.remove_from_backpack(item_name)
+            if removed_item:
+                return Response({"message": "Item removed from backpack.", "item": removed_item}, status=200)
+            return Response({"error": "Item not found in backpack."}, status=404)
+        except Inventory.DoesNotExist:
+            return Response({"error": "Backpack not found."}, status=404)
+
+class BackpackListContentsView(APIView):
+    """List the contents of a backpack."""
+
+    def get(self, request, *args, **kwargs):
+        backpack_id = request.GET.get("backpack_id")
+
+        try:
+            backpack = Inventory.objects.get(id=backpack_id)
+            if not backpack.is_backpack:
+                return Response({"error": "This item is not a backpack."}, status=400)
+
+            return Response({"contents": backpack.backpack_contents}, status=200)
+        except Inventory.DoesNotExist:
+            return Response({"error": "Backpack not found."}, status=404)

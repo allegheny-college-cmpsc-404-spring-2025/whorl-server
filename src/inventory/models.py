@@ -50,7 +50,7 @@ class Inventory(models.Model):
     item_bytestring = models.BinaryField(default = b'\x08', editable = True)
     is_backpack = models.BooleanField(default=False)  # Indicates if the item is a backpack
     backpack_capacity = models.IntegerField(default=0)  # Capacity of the backpack
-    backpack_contents = models.JSONField(default=list, blank=True)  # Contents of the backpack
+    backpack_contents = models.JSONField(default=list, blank=True, null=True)  # Contents of the backpack
 
     def __str__(self):
         return self.item_name

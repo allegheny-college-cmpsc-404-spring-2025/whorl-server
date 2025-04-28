@@ -2,6 +2,7 @@ import json
 import requests
 import logging
 import omnipresence
+import pathlib
 
 from django.http import HttpResponse
 from rest_framework.views import APIView
@@ -15,6 +16,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
 from django.db.utils import InternalError as PostgresException
+from omnipresence.serializer import OmnipresenceSerializer
 
 # Set up the logger
 logger = logging.getLogger(__name__)
@@ -51,6 +53,25 @@ class AddInventoryView(APIView):
             # TODO: This is really a trigger?
             setattr(item, 'item_bulk', qty * getattr(item, 'item_weight'))
             # Save modified item to database
+
+        item_name = request.data.get("item_name")
+        if item_name == "Backpack":
+            # print("Creating a backpack")
+            item_owner_id = getattr(item_owner_record, 'id')
+            backpack_name = str(item_name) + str(hash(item_name))
+            data = {
+                "username": backpack_name,
+                "charname": backpack_name,
+                "working_dir": str(pathlib.Path(__file__).resolve()),
+            }
+            setattr(item, 'item_name', backpack_name)
+            # print("item name set")
+            serializer = OmnipresenceSerializer(data = data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(status = 201)
+            return Response(serializer.errors, status = 400)
+
         try:
             item.save()
         except PostgresException as e:

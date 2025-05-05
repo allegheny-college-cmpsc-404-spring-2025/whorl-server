@@ -2,6 +2,7 @@ import json
 import requests
 import logging
 import omnipresence
+import pathlib
 
 from django.http import HttpResponse
 from rest_framework.views import APIView
@@ -15,6 +16,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
 from django.db.utils import InternalError as PostgresException
+from omnipresence.serializer import OmnipresenceSerializer
 
 # Set up the logger
 logger = logging.getLogger(__name__)
@@ -51,6 +53,25 @@ class AddInventoryView(APIView):
             # TODO: This is really a trigger?
             setattr(item, 'item_bulk', qty * getattr(item, 'item_weight'))
             # Save modified item to database
+
+        item_name = request.data.get("item_name")
+        if item_name == "Backpack":
+            # print("Creating a backpack")
+            item_owner_id = getattr(item_owner_record, 'id')
+            backpack_name = str(item_name) + str(hash(item_name))
+            data = {
+                "username": backpack_name,
+                "charname": backpack_name,
+                "working_dir": str(pathlib.Path(__file__).resolve()),
+            }
+            setattr(item, 'item_name', backpack_name)
+            # print("item name set")
+            serializer = OmnipresenceSerializer(data = data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(status = 201)
+            return Response(serializer.errors, status = 400)
+
         try:
             item.save()
         except PostgresException as e:
@@ -221,3 +242,56 @@ class GiveInventoryView(GenericAPIView, UpdateModelMixin):
         return HttpResponse(
             status = 200
         )
+    
+class BackpackAddItemView(APIView):
+    """Add an item to a backpack."""
+
+    def post(self, request, *args, **kwargs):
+        backpack_id = request.data.get("backpack_id")
+        item_id = request.data.get("item_id")
+
+        try:
+            backpack = Inventory.objects.get(id=backpack_id)
+            if not backpack.is_backpack:
+                return Response({"error": "This item is not a backpack."}, status=400)
+
+            item = Inventory.objects.get(id=item_id)
+            if backpack.add_to_backpack(item):
+                return Response({"message": "Item added to backpack."}, status=200)
+            return Response({"error": "Backpack is full."}, status=400)
+        except Inventory.DoesNotExist:
+            return Response({"error": "Backpack or item not found."}, status=404)
+
+class BackpackRemoveItemView(APIView):
+    """Remove an item from a backpack."""
+
+    def post(self, request, *args, **kwargs):
+        backpack_id = request.data.get("backpack_id")
+        item_name = request.data.get("item_name")
+
+        try:
+            backpack = Inventory.objects.get(id=backpack_id)
+            if not backpack.is_backpack:
+                return Response({"error": "This item is not a backpack."}, status=400)
+
+            removed_item = backpack.remove_from_backpack(item_name)
+            if removed_item:
+                return Response({"message": "Item removed from backpack.", "item": removed_item}, status=200)
+            return Response({"error": "Item not found in backpack."}, status=404)
+        except Inventory.DoesNotExist:
+            return Response({"error": "Backpack not found."}, status=404)
+
+class BackpackListContentsView(APIView):
+    """List the contents of a backpack."""
+
+    def get(self, request, *args, **kwargs):
+        backpack_id = request.GET.get("backpack_id")
+
+        try:
+            backpack = Inventory.objects.get(id=backpack_id)
+            if not backpack.is_backpack:
+                return Response({"error": "This item is not a backpack."}, status=400)
+
+            return Response({"contents": backpack.backpack_contents}, status=200)
+        except Inventory.DoesNotExist:
+            return Response({"error": "Backpack not found."}, status=404)

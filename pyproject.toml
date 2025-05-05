@@ -16,7 +16,10 @@ dependencies = [
     "django-pgtrigger",
     "django_rest_swagger",
     "drf-yasg",
-    "django_rest_framework"
+    "django_rest_framework",
+    "schedule",
+    "django_prometheus",
+    "python-crontab"
 ]
 
 readme = "README.md"
